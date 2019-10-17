@@ -1,3 +1,4 @@
+
 import pandas as pd
 import warnings
 warnings.filterwarnings('ignore')
@@ -149,6 +150,14 @@ class Relation(pd.DataFrame):
             raise ValueError("Relations must be Union compatible")
         else:
             return Relation(pd.merge(self,other,how='inner',on=list(self.columns)))
+
+    def anti_join(self,other):
+        '''Anti-join between two tables returns rows from the first table where no matches are found in the second table.
+        It is opposite of a semi-join. An anti-join returns one copy of each row in the first table for which no match is
+        found.'''
+
+        similar_cols = set(self.columns).antijoin(set(other.columns))
+        return Relation(self.filter(similar_cols))
 
     def njoin(self, other):
         """Create a new relation that is the intersection of the two given relations
@@ -328,6 +337,8 @@ class Relation(pd.DataFrame):
         return Relation(res.drop_duplicates())
 
     def groupby(self,cols):
+        #country = Relation("Country.csv")
+        #country.groupby(['continent','region == "Western Africa" '])
         """ Collapse a relation containing one row per unique value in the given group by attributes.
 
         The groupby operator is always used in conjunction with an aggregate operator.
