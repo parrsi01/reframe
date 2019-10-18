@@ -217,7 +217,7 @@ class Relation(pd.DataFrame):
         >>>
         """
         if set(self.columns.values) != set(other.columns.values):
-            raise ValueError("The two relations must have the same columns")
+            raise ValueError("The two relations must have some columns in common")
         merged = pd.merge(left=self, right=other, how='left', indicator=True, on=self.columns.tolist())
         return Relation(merged.loc[merged._merge == 'left_only', :].drop(columns='_merge'))
 
