@@ -151,14 +151,6 @@ class Relation(pd.DataFrame):
         else:
             return Relation(pd.merge(self,other,how='inner',on=list(self.columns)))
 
-    def anti_join(self,other):
-        '''Anti-join between two tables returns rows from the first table where no matches are found in the second table.
-        It is opposite of a semi-join. An anti-join returns one copy of each row in the first table for which no match is
-        found.'''
-
-        similar_cols = set(self.columns).antijoin(set(other.columns))
-        return Relation(self.filter(similar_cols))
-
     def njoin(self, other):
         """Create a new relation that is the intersection of the two given relations
 
@@ -198,6 +190,36 @@ class Relation(pd.DataFrame):
             raise ValueError("The two relations must have some columns in common")
         return Relation(pd.merge(self,other,how='inner',on=list(col_list)))
 
+    def antijoin(self, other):
+        """Use two tables, i.e t1 and t2 and create relation containing all rows of
+        t1 that aren't present in t2.
+        :param other: The relation to compute the antijoin with.
+        :return:
+        :Example:
+        
+        >>> from reframe import Relation
+        >>> country = Relation('country.csv')
+        >>> country.query('continent == "North America"').project(['name','region']).antijoin(country.query('region == "Caribbean"').project(['name', 'region']))
+                                 name           region
+        6                      Belize  Central America
+        7                     Bermuda    North America
+        10                 Costa Rica  Central America
+        13                El Salvador  Central America
+        15                  Greenland    North America
+        17                  Guatemala  Central America
+        19                   Honduras  Central America
+        21                     Canada    North America
+        24                     Mexico  Central America
+        26                  Nicaragua  Central America
+        27                     Panama  Central America
+        32  Saint Pierre and Miquelon    North America
+        35              United States    North America
+        >>>
+        """
+        if set(self.columns.values) != set(other.columns.values):
+            raise ValueError("The two relations must have the same columns")
+        merged = pd.merge(left=self, right=other, how='left', indicator=True, on=self.columns.tolist())
+        return Relation(merged.loc[merged._merge == 'left_only', :].drop(columns='_merge'))
 
 
     def union(self,other):
@@ -579,6 +601,8 @@ class GroupWrap(pd.core.groupby.DataFrameGroupBy):
         """
         res = self.gbo.median()
         return Relation(self.filteragg(res, col).rename(columns={col:"median_"+col}))
+
+    
 
 if __name__ == '__main__':
     #country = Relation('country.csv')
