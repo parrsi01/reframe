@@ -9,7 +9,7 @@ def r():
     r = Relation('country.csv')
     return r
 
-def test_antijoin():
+def test_antijoin(r):
     r = country.query('continent == "North America"').project(['name','region']).antijoin(country.query('region == "Caribbean"').project(['name', 'region'])).reset_index().drop(columns=["index"])
     data_expected = Relation("tests/antijoin.csv", sep="|").reset_index().drop(columns=["index"])
     df_expected = pd.DataFrame(data=data_expected)

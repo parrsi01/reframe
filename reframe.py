@@ -193,7 +193,7 @@ class Relation(pd.DataFrame):
     def antijoin(self, other):
         """Use two tables, i.e t1 and t2 and create relation containing all rows of
         t1 that aren't present in t2.
-        :param other: The relation to compute the antijoin with.
+        :parameters self, other: The relation compared with the antijoin.
         :return:
         :Example:
         
